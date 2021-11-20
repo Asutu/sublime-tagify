@@ -4,6 +4,11 @@ import os
 import re
 
 
+def natsort(s, _nsre=re.compile('([0-9]+)')):
+    # https://stackoverflow.com/a/16090640/1738879
+    return [int(text) if text.isdigit() else text.lower() for text in _nsre.split(s)]
+
+
 class Prefs:
     @staticmethod
     def read():
@@ -81,7 +86,7 @@ class Tagifier(sublime_plugin.EventListener):
 class ShowTagsMenuCommand(sublime_plugin.TextCommand):
     def run(self, edit):
 
-        tags = list(set(TagifyCommon.taglist + Prefs.common_tags))
+        tags = sorted(list(set(TagifyCommon.taglist + Prefs.common_tags)), key=natsort)
 
         def selected(pos):
             if pos >= 0:
@@ -97,7 +102,7 @@ class GenerateSummaryCommand(sublime_plugin.TextCommand):
         out = []
         cpos = 0
         regions = []
-        for tag in data:
+        for tag in sorted(data.keys(), key=natsort):
             out.append("- %s - " % tag)
             cpos += len(out[-1]) + 1
             for entry in data[tag]:
@@ -109,9 +114,8 @@ class GenerateSummaryCommand(sublime_plugin.TextCommand):
             out.append("")
             cpos += 1
         self.view.insert(edit, 0, "\n".join(out))
-        self.view.add_regions(
-            "tagify-link", regions, 'link', "",
-            sublime.HIDDEN)
+        # self.view.add_regions("tagify-link", regions, 'link', "", sublime.HIDDEN)
+        self.view.add_regions("tagify-link", regions, 'link', "")
         self.view.set_read_only(True)
         self.view.set_scratch(True)
 
