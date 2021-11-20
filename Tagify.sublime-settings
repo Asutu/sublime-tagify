@@ -8,7 +8,7 @@
 
     // Extensions of files which will be processed by tagify
     // add "none" (without " marks) to process files without extensions
-    "extensions": ["py", "html", "htm", "js"],
+    "extensions": ["md" ,"py", "html", "htm", "js"],
 
     // In some cases we dont want particular #@string to be considered as tag
     // put those "bad" tags here

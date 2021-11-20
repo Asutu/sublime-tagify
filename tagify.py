@@ -3,6 +3,7 @@ import sublime_plugin
 import os
 import re
 
+
 class Prefs:
     @staticmethod
     def read():
@@ -10,7 +11,7 @@ class Prefs:
         Prefs.common_tags = settings.get('common_tags', ["todo", "bug", "workaround"])
         Prefs.blacklisted_tags = set(settings.get('blacklisted_tags', ["property"]) or [])
         Prefs.analyse_on_start = settings.get('analyse_on_start', True)
-        Prefs.extensions = settings.get('extensions', ["py", "html", "htm", "js"])
+        Prefs.extensions = settings.get('extensions', ["md", "py", "html", "htm", "js"])
         Prefs.tag_re = settings.get('tag_re', "@((?:[_a-zA-Z0-9]+))")
 
     @staticmethod
@@ -22,6 +23,7 @@ class Prefs:
         settings.add_on_change('extensions', Prefs.read)
         settings.add_on_change('tag_re', Prefs.read)
         Prefs.read()
+
 
 class TagifyCommon:
     data = {}
@@ -79,13 +81,13 @@ class Tagifier(sublime_plugin.EventListener):
 class ShowTagsMenuCommand(sublime_plugin.TextCommand):
     def run(self, edit):
 
-        tags = list(set(TagifyCommon.taglist+Prefs.common_tags))
+        tags = list(set(TagifyCommon.taglist + Prefs.common_tags))
 
         def selected(pos):
             if pos >= 0:
                 sel = self.view.sel()
                 for region in sel:
-                    self.view.run_command("insert", {'characters': "#@"+tags[pos]})
+                    self.view.run_command("insert", {'characters': "#@" + tags[pos]})
 
         self.view.show_popup_menu(tags, selected)
 
@@ -175,30 +177,30 @@ class TagifyCommand(sublime_plugin.WindowCommand):
             if None in processed_extensions and len(split_filename) == 1:
                 self.tagify_file(dirname, filename, ctags, folder)
 
-
     def run(self, quiet=False):
         Prefs.read()
         self.tag_re = re.compile("%s(.*?)$" % Prefs.tag_re)
 
         ctags = {}
 
-        #process opened folders
+        # process opened folders
         folders = self.window.folders()
         for folder in folders:
             for dirname, dirnames, filenames in os.walk(folder):
                 self.process_file_list(filenames, ctags, dirname, folder)
 
-        #process opened files
+        # process opened files
         self.process_file_list([view.file_name() for view in self.window.views() if view.file_name()], ctags)
 
-        #make all found occurrences unique across opened files/folders, fix for https://github.com/taigh/sublime-tagify/issues/5
+        # make all found occurrences unique across opened files/folders,
+        # fix for https://github.com/taigh/sublime-tagify/issues/5
         unique_ctags = {}
         for tag, regions in ctags.items():
             unique_regions = []
             unique_path_lineno = set()
             for region in regions:
                 path_lineno = (region['file'], region['line'])
-                if not path_lineno in unique_path_lineno:
+                if path_lineno not in unique_path_lineno:
                     unique_path_lineno.add(path_lineno)
                     unique_regions.append(region)
                 unique_ctags[tag] = unique_regions
