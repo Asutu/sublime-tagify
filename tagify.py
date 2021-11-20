@@ -108,16 +108,21 @@ class GenerateSummaryCommand(sublime_plugin.TextCommand):
         cpos = 0
         regions = []
         for tag in sorted(data.keys(), key=natsort):
-            out.append("- %s - " % tag)
+            # out.append("- %s - " % tag)
+            tag_out = tag + '\n' + '=' * len(tag)
+            out.append(tag_out)
             cpos += len(out[-1]) + 1
             for entry in data[tag]:
                 opos = cpos
-                out.append("%s" % entry["short_file"])
+                out.append("%s  " % entry["short_file"])
                 cpos += len(out[-1]) + 1
                 TagifyCommon.data[entry["short_file"]] = entry
-                regions.append(sublime.Region(opos, cpos - 1))
+                # regions.append(sublime.Region(opos, cpos - 1))
+                # need -3 because of the extra spaces at the end of line (for MD compatibility)
+                regions.append(sublime.Region(opos, cpos - 3))
             out.append("")
             cpos += 1
+
         self.view.insert(edit, 0, "\n".join(out))
         # self.view.add_regions("tagify-link", regions, 'link', "", sublime.HIDDEN)
         self.view.add_regions("tagify-link", regions, 'link', "")
