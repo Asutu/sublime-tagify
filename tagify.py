@@ -4,6 +4,9 @@ import os
 import re
 
 
+TAG_RE = '((?:[_a-zA-Z0-9]+))'
+
+
 def natsort(s, _nsre=re.compile('([0-9]+)')):
     # https://stackoverflow.com/a/16090640/1738879
     return [int(text) if text.isdigit() else text.lower() for text in _nsre.split(s)]
@@ -17,7 +20,7 @@ class Prefs:
         Prefs.blacklisted_tags = set(settings.get('blacklisted_tags', ["property"]) or [])
         Prefs.analyse_on_start = settings.get('analyse_on_start', True)
         Prefs.extensions = settings.get('extensions', ["md", "py", "html", "htm", "js"])
-        Prefs.tag_re = settings.get('tag_re', "@((?:[_a-zA-Z0-9]+))")
+        Prefs.tag_anchor = settings.get('tag_anchor', "#@")
 
     @staticmethod
     def load():
@@ -26,7 +29,7 @@ class Prefs:
         settings.add_on_change('blacklisted_tags', Prefs.read)
         settings.add_on_change('analyse_on_start', Prefs.read)
         settings.add_on_change('extensions', Prefs.read)
-        settings.add_on_change('tag_re', Prefs.read)
+        settings.add_on_change('tag_anchor', Prefs.read)
         Prefs.read()
 
 
@@ -42,11 +45,12 @@ class Tagifier(sublime_plugin.EventListener):
         super(Tagifier, self).__init__(*args, **kw)
         Prefs.load()
         self.last_sel = None
+        self.tag_find = '{0}{1}'.format(Prefs.tag_anchor, TAG_RE)
 
     def analyse_regions(self, view, regions):
         for region in regions:
             region = view.line(region)
-            tag_region = view.find(Prefs.tag_re, region.a)
+            tag_region = view.find(self.tag_find, region.a)
             if tag_region.a >= 0:
                 self.tags_regions.append(tag_region)
         view.add_regions("tagify", self.tags_regions, "markup.inserted",
@@ -54,7 +58,7 @@ class Tagifier(sublime_plugin.EventListener):
 
     def reanalyse_all(self, view):
         self.tags_regions = []
-        regions = view.find_all(Prefs.tag_re)
+        regions = view.find_all(self.tag_find)
         self.analyse_regions(view, regions)
 
     def on_post_save_async(self, view):
@@ -183,7 +187,8 @@ class TagifyCommand(sublime_plugin.WindowCommand):
 
     def run(self, quiet=False):
         Prefs.read()
-        self.tag_re = re.compile("%s(.*?)$" % Prefs.tag_re)
+        # self.tag_re = re.compile("%s(.*?)$" % Prefs.tag_re)
+        self.tag_re = re.compile('{0}{1}(.*?)$'.format(Prefs.tag_anchor, TAG_RE))
 
         ctags = {}
 

@@ -14,5 +14,5 @@
     // put those "bad" tags here
     "blacklisted_tags": ["property"],
 
-    "tag_re": "#@((?:[_a-zA-Z0-9]+))"
+    "tag_anchor": "#@"
 }
