@@ -13,7 +13,7 @@ class Prefs:
     @staticmethod
     def read():
         settings = sublime.load_settings('Tagify.sublime-settings')
-        Prefs.common_tags = settings.get('common_tags', ["todo", "bug", "workaround"])
+        Prefs.common_tags = settings.get('common_tags', [])
         Prefs.blacklisted_tags = set(settings.get('blacklisted_tags', ["property"]) or [])
         Prefs.analyse_on_start = settings.get('analyse_on_start', True)
         Prefs.extensions = settings.get('extensions', ["md", "py", "html", "htm", "js"])
