@@ -96,7 +96,8 @@ class ShowTagsMenuCommand(sublime_plugin.TextCommand):
             if pos >= 0:
                 sel = self.view.sel()
                 for region in sel:
-                    self.view.run_command("insert", {'characters': "#@" + tags[pos]})
+                    self.view.run_command(
+                        "insert", {'characters': Prefs.tag_anchor + tags[pos] + ' '})
 
         self.view.show_popup_menu(tags, selected)
 
