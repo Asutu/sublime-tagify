@@ -4,7 +4,7 @@ import os
 import re
 
 
-TAG_RE = '((?:[_a-zA-Z0-9]+))'
+TAG_RE = '((?:[\._a-zA-Z0-9]+))'
 
 
 def natsort(s, _nsre=re.compile('([0-9]+)')):
