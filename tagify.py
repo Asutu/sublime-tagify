@@ -153,15 +153,14 @@ class TagifyCommand(sublime_plugin.WindowCommand):
         for n, line in enumerate(filelines):
             if do_encode:
                 line = line.decode('utf-8', 'replace')
-            match = self.tag_re.search(line)
-            if match:
+
+            for match in self.tag_re.finditer(line):
                 tag_name = match.group(1)
                 if tag_name in Prefs.blacklisted_tags:
                     continue
                 path = os.path.join(dirname, filename)
                 data = {
                     'region': (cpos + match.start(1), cpos + match.end(1)),
-                    'comment': match.group(2),
                     'file': path,
                     'short_file': "%s:%i" % (path[len(folder_prefix) + 1:], n + 1),
                     'line': n + 1
@@ -194,7 +193,8 @@ class TagifyCommand(sublime_plugin.WindowCommand):
     def run(self, quiet=False):
         Prefs.read()
         # self.tag_re = re.compile("%s(.*?)$" % Prefs.tag_re)
-        self.tag_re = re.compile('{0}{1}(.*?)$'.format(Prefs.tag_anchor, TAG_RE))
+        # self.tag_re = re.compile('{0}{1}(.*?)$'.format(Prefs.tag_anchor, TAG_RE))
+        self.tag_re = re.compile('{0}{1}'.format(Prefs.tag_anchor, TAG_RE))
 
         ctags = {}
 
