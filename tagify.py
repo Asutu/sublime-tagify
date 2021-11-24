@@ -90,8 +90,6 @@ class Tagifier(sublime_plugin.EventListener):
 class ShowTagsMenuCommand(sublime_plugin.TextCommand):
     def run(self, edit):
 
-        tags = sorted(list(set(TagifyCommon.taglist + Prefs.common_tags)), key=natsort)
-
         def selected(pos):
             if pos >= 0:
                 sel = self.view.sel()
@@ -99,7 +97,12 @@ class ShowTagsMenuCommand(sublime_plugin.TextCommand):
                     self.view.run_command(
                         "insert", {'characters': Prefs.tag_anchor + tags[pos] + ' '})
 
-        self.view.show_popup_menu(tags, selected)
+        self.view.show_popup_menu(TagifyCommon.taglist, selected)
+
+
+class AutocompleteTags(sublime_plugin.EventListener):
+    def on_query_completions(self, view, prefix, locations):
+        return [t for t in TagifyCommon.taglist if t.lower().startswith(prefix.lower())]
 
 
 class GenerateSummaryCommand(sublime_plugin.TextCommand):
@@ -220,7 +223,9 @@ class TagifyCommand(sublime_plugin.WindowCommand):
                     unique_regions.append(region)
                 unique_ctags[tag] = unique_regions
 
-        TagifyCommon.taglist = list(unique_ctags.keys())
+        # TagifyCommon.taglist = list(unique_ctags.keys())
+        TagifyCommon.taglist = sorted(list(set(list(unique_ctags.keys()) + Prefs.common_tags)), key=natsort)
+
         if not quiet:
             summary = self.window.new_file()
             summary.set_name("Tags summary")
